@@ -11,12 +11,19 @@ source('~/git/scripts/theme_Publication.R')
 ```
 ## Load in data from coverage_calc.sh
 ```{r}
-dat <- fread('gzcat ~/15-00414_RD.depth.gz.gz') %>% data.frame()
-colnames(dat) <- c('chr','start','stop','Strand','Gene','Position','Depth')
+dat <- fread('gzcat ~/Desktop/16-00307_RD.depth.gz') %>% data.frame()
+colnames(dat) <- c('chr','start','stop','Transcript','Gene','Strand', 'Position','Depth')
 ```
 ## ID covered genes
 ```{r}
-covered_genes <- dat %>% group_by(Gene) %>% summarise(Mean=mean(Depth)) %>% filter(Mean>50) %>% select(Gene)
+covered_genes <- dat %>% group_by(Gene) %>% summarise(Mean=mean(Depth)) %>% filter(Mean>50) %>% .[['Gene']]
+# Number of covered genes
+length(covered_genes)
+```
+
+## Load panel specific genes:
+```{r}
+rd <- scan('../data/MVL_tests/RD.txt', what='character')
 ```
 ## Calculate overall coverage 
 ```{r}
@@ -27,16 +34,16 @@ dat %>% filter(Gene %in% rd) %>%
 ## Density, split by gene
 ```{r, fig.width=20, fig.height=20}
 dat %>% filter(Gene %in% rd) %>% group_by(Gene) %>% 
-  ggplot(aes(x=Depth)) + geom_density() + theme_Publication() + facet_wrap(~Gene, scales = 'free')
+  ggplot(aes(x=Depth)) + geom_density() + theme_Publication() + facet_wrap(~ Gene, scales = 'free_y')
 ```
 
-## Coverage, for a few genes, across the gene body
+## Coverage, for a few genes, across the gene body (areas with no dots are generally introns)
 ```{r}
-dat %>% filter(Gene %in% c('ABCA4','CHM')) %>% group_by(Gene) %>% mutate(Position=start+Position) %>% 
-  ggplot(aes(y=Depth+1,x=Position)) + geom_point() + theme_Publication() + facet_wrap(~Gene, scales = 'free') + scale_y_log10()
+dat %>% filter(Gene %in% c('SAG','CHM')) %>% group_by(Gene) %>% mutate(Position=start+Position) %>% 
+  ggplot(aes(y=Depth,x=Position)) + geom_point() + theme_Publication() + facet_wrap(~Gene, scale='free_x') + geom_hline(yintercept=20,colour='red') + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 ```
 
 ## Stats, by gene
-```{r}
-dat %>% filter(Gene %in% covered_genes$Gene) %>% group_by(Gene) %>% summarise(`Percent BP Under 10 Reads`=sum(Depth<10)/n()*100)
+```{r, fig.width=20, fig.height=5}
+dat %>% filter(Gene %in% rd) %>% group_by(Gene) %>% summarise(`Percent coding exons with less than 10 reads`=sum(Depth<10)/n()*100) %>% arrange(-`Percent coding exons with less than 10 reads`) %>% ggplot(aes(x=Gene,y=`Percent coding exons with less than 10 reads`)) + geom_bar(stat='identity')  + theme_Publication()+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 ```
