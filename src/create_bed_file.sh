@@ -1,4 +1,4 @@
-i# Create bed file of exons from gencode gtf
+# Create bed file of exons from gencode gtf
 bash ~/bin/gtf_to_bed.sh /data/mcgaugheyd/genomes/1000G_phase2_GRCh37/gencode.v25lift37.annotation.gtf.gz > gencode.v25.lift37.bed
 bgzip gencode.v25.lift37.bed
 
@@ -21,3 +21,6 @@ sort -k1,1 -k2,2n gencode.v25.lift37.MVLgenes2.bed > gencode.v25.lift37.MVLgenes
 
 # convert to GRCh37
 ~/bin/convert_hg19_bed_to_b37.py gencode.v25.lift37.MVLgenes2.sorted.bed > gencode.v25.lift37.MVLgenes.GRCh37.bed
+
+# GATK sort
+~/bin/gsort_linux_amd64 gencode.v25.lift37.MVLgenes.GRCh37.bed /data/mcgaugheyd/genomes/1000G_phase2_GRCh37/GRCh37_gatk_order.genome  > gencode.v25.lift37.MVLgenes.GRCh37.gatkSort.bed
