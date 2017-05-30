@@ -11,39 +11,75 @@ source('~/git/scripts/theme_Publication.R')
 ```
 ## Load in data from coverage_calc.sh
 ```{r}
-dat <- fread('gzcat ~/Desktop/16-00307_RD.depth.gz') %>% data.frame()
-colnames(dat) <- c('chr','start','stop','Transcript','Gene','Strand', 'Position','Depth')
-```
-## ID covered genes
-```{r}
-covered_genes <- dat %>% group_by(Gene) %>% summarise(Mean=mean(Depth)) %>% filter(Mean>50) %>% .[['Gene']]
-# Number of covered genes
-length(covered_genes)
-```
-
-## Load panel specific genes:
-```{r}
-rd <- scan('../data/MVL_tests/RD.txt', what='character')
-```
-## Calculate overall coverage 
-```{r}
-dat %>% filter(Gene %in% rd) %>%
-  ggplot(aes(x=Depth+1)) + geom_density() + theme_Publication() + scale_x_log10()
+depth_filenames <- list.files('../data/processed/', pattern='depth.gz')
+depth_filenames <- sapply(depth_filenames, function(x) gsub(".depth.gz","",x))
+depth_filepaths <- list.files('../data/processed/', pattern='depth.gz', full.names = T)
+depth_filenames
+depth_filepaths
+dat = list()
+for (i in seq(1,length(depth_filenames))){
+  temp <- fread(paste('gzcat',depth_filepaths[i])) %>% data.frame()
+  colnames(temp) <- c('chr','start','stop','Transcript','Gene','Strand', 'Position','Depth')
+  dat[[depth_filenames[i]]] <- temp
+}
+dat_df <- bind_rows(dat, .id='NGS_file')
+rm(dat)
+rm(temp)
 ```
 
-## Density, split by gene
-```{r, fig.width=20, fig.height=20}
-dat %>% filter(Gene %in% rd) %>% group_by(Gene) %>% 
-  ggplot(aes(x=Depth)) + geom_density() + theme_Publication() + facet_wrap(~ Gene, scales = 'free_y')
+
+## Calculate overall coverage, split by NGS test
+
+### Coverage Density for Exome/WGS
+#### Red line is <=10 reads
+```{r}
+dat_df %>% filter(NGS_file %in% c('CCGO_800071_WGS','HG001_WGS','CCGO_800596_Exome')) %>% group_by(NGS_file) %>% 
+  ggplot(aes(x=Depth, colour=NGS_file)) + geom_density() + theme_Publication() + coord_cartesian(xlim=c(0,300)) + geom_vline(xintercept = 10,colour='red')
+```
+
+### Coverage Density for Casey/MVL Panels
+#### Red line is <=10 reads
+```{r}
+dat_df %>% filter(!NGS_file %in% c('CCGO_800071_WGS','HG001_WGS','CCGO_800596_Exome')) %>% group_by(NGS_file) %>% 
+  ggplot(aes(x=log2(Depth+1), colour=NGS_file)) + geom_density() + theme_Publication() + geom_vline(xintercept = log2(10),colour='red')
+```
+### Coverage Density for Casey/MVL RD with the Exome/WGS
+#### Red line is <=10 reads
+```{r}
+dat_df %>% filter(NGS_file %in% c('CCGO_800071_WGS','HG001_WGS','CCGO_800596_Exome','16-00307_RD')) %>% group_by(NGS_file) %>% 
+  ggplot(aes(x=log2(Depth+1), colour=NGS_file)) + geom_density() + theme_Publication() + geom_vline(xintercept = log2(10), colour='red')
+```
+
+## Mean and median for each test
+```{r}
+dat_df %>% group_by(NGS_file) %>% summarise(Mean=mean(Depth), Median=median(Depth), `25th`=quantile(Depth,0.25), `75th` = quantile(Depth,0.75))
+```
+
+## Percent of base pairs with less than N reads
+```{r}
+dat_df %>% group_by(NGS_file) %>% summarise(`10 reads`= sum(Depth<10)/n() * 100, `15 reads`= sum(Depth<15)/n() * 100, `20 reads`= sum(Depth<20)/n() * 100, `25 reads`= sum(Depth<25)/n() * 100)
+```
+
+## Percent of base pairs with less than 10 reads, split by NGS_file and gene
+```{r, fig.width=10, fig.height=35}
+dat_df %>% group_by(NGS_file, Gene) %>% summarise(`10 reads`= sum(Depth<10)/n() * 100) %>% 
+  ggplot(aes(x=Gene, y=`10 reads`)) + geom_bar(stat='identity') + theme_Publication() + coord_flip() +
+  facet_wrap(~ NGS_file, ncol=8)
+```
+
+## Density in coding exons, split by gene, coloured by test
+### (I can add any gene you want here)
+```{r}
+dat_df %>% filter(Gene %in% c('ABCA4', 'SAG', 'CHM')) %>% group_by(Gene, NGS_file) %>% 
+  ggplot(aes(x=log10(Depth+1),colour=NGS_file)) + 
+  geom_density() + 
+  theme_Publication() + 
+  facet_wrap(~ Gene, scales = 'free_y', ncol = 4)
 ```
 
 ## Coverage, for a few genes, across the gene body (areas with no dots are generally introns)
-```{r}
-dat %>% filter(Gene %in% c('SAG','CHM')) %>% group_by(Gene) %>% mutate(Position=start+Position) %>% 
-  ggplot(aes(y=Depth,x=Position)) + geom_point() + theme_Publication() + facet_wrap(~Gene, scale='free_x') + geom_hline(yintercept=20,colour='red') + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-```
-
-## Stats, by gene
-```{r, fig.width=20, fig.height=5}
-dat %>% filter(Gene %in% rd) %>% group_by(Gene) %>% summarise(`Percent coding exons with less than 10 reads`=sum(Depth<10)/n()*100) %>% arrange(-`Percent coding exons with less than 10 reads`) %>% ggplot(aes(x=Gene,y=`Percent coding exons with less than 10 reads`)) + geom_bar(stat='identity')  + theme_Publication()+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+### (I can substitute other genes)
+```{r, fig.width=4,fig.height=6}
+dat_df %>% filter(Gene %in% c('ABCA4','SAG','CHM')) %>% group_by(NGS_file,Gene) %>% mutate(Position=start+Position) %>% 
+  ggplot(aes(y=log2(Depth+1),x=Position,colour=NGS_file)) + geom_jitter(alpha=0.4,size=0.1) + theme_Publication() + facet_wrap(~Gene, scale='free_x', ncol=1) + geom_hline(yintercept=log2(10),colour='red') + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 ```
