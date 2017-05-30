@@ -1,0 +1,42 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+## Load packages
+```{r, message = F}
+library(tidyverse)
+library(data.table)
+source('~/git/scripts/theme_Publication.R')
+```
+## Load in data from coverage_calc.sh
+```{r}
+dat <- fread('gzcat ~/15-00414_RD.depth.gz.gz') %>% data.frame()
+colnames(dat) <- c('chr','start','stop','Strand','Gene','Position','Depth')
+```
+## ID covered genes
+```{r}
+covered_genes <- dat %>% group_by(Gene) %>% summarise(Mean=mean(Depth)) %>% filter(Mean>50) %>% select(Gene)
+```
+## Calculate overall coverage 
+```{r}
+dat %>% filter(Gene %in% rd) %>%
+  ggplot(aes(x=Depth+1)) + geom_density() + theme_Publication() + scale_x_log10()
+```
+
+## Density, split by gene
+```{r, fig.width=20, fig.height=20}
+dat %>% filter(Gene %in% rd) %>% group_by(Gene) %>% 
+  ggplot(aes(x=Depth)) + geom_density() + theme_Publication() + facet_wrap(~Gene, scales = 'free')
+```
+
+## Coverage, for a few genes, across the gene body
+```{r}
+dat %>% filter(Gene %in% c('ABCA4','CHM')) %>% group_by(Gene) %>% mutate(Position=start+Position) %>% 
+  ggplot(aes(y=Depth+1,x=Position)) + geom_point() + theme_Publication() + facet_wrap(~Gene, scales = 'free') + scale_y_log10()
+```
+
+## Stats, by gene
+```{r}
+dat %>% filter(Gene %in% covered_genes$Gene) %>% group_by(Gene) %>% summarise(`Percent BP Under 10 Reads`=sum(Depth<10)/n()*100)
+```
