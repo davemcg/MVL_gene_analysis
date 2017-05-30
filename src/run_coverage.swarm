@@ -1,0 +1,8 @@
+src/coverage_calc.sh /data/mcgaugheyd/projects/nei/brooks/casey_2/RD/second_run/16-00307/16-00307_RD.bwa-mem.b37.sorted.realigned.recalibrated.bam 16-00307_RD.depth
+src/coverage_calc.sh /data/mcgaugheyd/projects/nei/brooks/casey_2/pigmentation/16-00392/16-00392_Pigmentation.bwa-mem.b37.sorted.markDup.realigned.recalibrated.bam 16-00392_Pigmentation.depth
+src/coverage_calc.sh /data/mcgaugheyd/projects/nei/brooks/casey_2/OPA/15-03638/15-03638_OPA.bwa-mem.b37.sorted.markDup.realigned.recalibrated.bam 15-03638_OPA.depth
+src/coverage_calc.sh /data/mcgaugheyd/projects/nei/brooks/casey_2/ACHM/15-03085/15-03085_Achromotopsia.bwa-mem.b37.sorted.markDup.realigned.recalibrated.bam 15-03085_Achromotopsia.depth
+src/coverage_calc.sh /data/mcgaugheyd/projects/nei/brooks/casey_2/Stargardt/second_run/16-00721/16-00721_Stargardt.bwa-mem.b37.sorted.realigned.recalibrated.bam 16-00721_Stargardt.depth
+src/coverage_calc.sh /data/mcgaugheyd/projects/nei/brooks/CCGO/bamfiles/CCGO_800596.bwa-mem.b37.merged.sorted.markDup.realigned.recalibrated.bam CCGO_800596_Exome.depth
+src/coverage_calc.sh /data/mcgaugheyd/projects/nei/mcgaughey/NA12878/precisionFDA_HG001/HG001_WGS.bwa-mem.g1k_decoy.sorted.markDup.realigned.recalibrated.bam HG001_WGS.depth
+src/coverage_calc.sh /data/mcgaugheyd/projects/nei/brooks/CCGO/800067-71_WGS/CCGO_800071/CCGO_800071.bwa-mem.b37.merged.sorted.markDup.realigned.recalibrated.bam CCGO_800071_WGS.depth
