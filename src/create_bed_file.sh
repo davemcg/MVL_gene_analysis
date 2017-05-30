@@ -1,5 +1,5 @@
 # Create bed file of exons from gencode gtf
-bash ~/bin/gtf_to_bed.sh /data/mcgaugheyd/genomes/1000G_phase2_GRCh37/gencode.v25lift37.annotation.gtf.gz > gencode.v25.lift37.bed
+bash src/gtf_to_bed.sh /data/mcgaugheyd/genomes/1000G_phase2_GRCh37/gencode.v25lift37.annotation.gtf.gz > gencode.v25.lift37.bed
 bgzip gencode.v25.lift37.bed
 
 # filter the bed down to the MVL genes
