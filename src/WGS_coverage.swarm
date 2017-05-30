@@ -1,0 +1,2 @@
+genomeCoverageBed -ibam /data/mcgaugheyd/projects/nei/mcgaughey/NA12878/precisionFDA_HG001/HG001_WGS.bwa-mem.g1k_decoy.sorted.markDup.realigned.recalibrated.bam -g /data/mcgaugheyd/genomes/1000G_phase2_GRCh37/GRCh37_gatk_order.genome > HG001.coverage
+genomeCoverageBed -ibam /data/mcgaugheyd/projects/nei/brooks/CCGO/800067-71_WGS/CCGO_800071/CCGO_800071.bwa-mem.b37.merged.sorted.markDup.realigned.recalibrated.bam -g /data/mcgaugheyd/genomes/1000G_phase2_GRCh37/GRCh37_gatk_order.genome > CCGO_800071.coverage
