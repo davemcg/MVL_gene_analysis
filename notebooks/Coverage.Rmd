@@ -78,6 +78,15 @@ dat_df %>%
   mutate(`Exome -> 30X WGS` = CCGO_800596_Exome - CCGO_800071_WGS, `30X WGS -> 50X WGS` = CCGO_800071_WGS - HG001_WGS) %>% 
   arrange(-`Exome -> 30X WGS`)
 
+ordered_genes_exome_30x <- dat_df %>% 
+  filter(NGS_file %in% c('CCGO_800071_WGS','HG001_WGS','CCGO_800596_Exome')) %>% 
+  group_by(NGS_file, Gene) %>% 
+  summarise(`% <10 reads`= sum(Depth<10)/n() * 100) %>% 
+  spread(NGS_file, `% <10 reads`) %>% 
+  select(Gene, CCGO_800596_Exome, CCGO_800071_WGS, HG001_WGS) %>% 
+  mutate(`Exome -> 30X WGS` = CCGO_800596_Exome - CCGO_800071_WGS, `30X WGS -> 50X WGS` = CCGO_800071_WGS - HG001_WGS) %>% 
+  arrange(`Exome -> 30X WGS`) %>% .[['Gene']]
+
 dat_df %>% 
   filter(NGS_file %in% c('CCGO_800071_WGS','HG001_WGS','CCGO_800596_Exome')) %>% 
   group_by(NGS_file, Gene) %>% 
@@ -86,6 +95,15 @@ dat_df %>%
   select(Gene, CCGO_800596_Exome, CCGO_800071_WGS, HG001_WGS) %>% 
   mutate(`Exome -> 30X WGS` = CCGO_800596_Exome - CCGO_800071_WGS, `30X WGS -> 50X WGS` = CCGO_800071_WGS - HG001_WGS) %>% 
   arrange(-`30X WGS -> 50X WGS`)
+
+ordered_genes_30x_50x <- dat_df %>% 
+  filter(NGS_file %in% c('CCGO_800071_WGS','HG001_WGS','CCGO_800596_Exome')) %>% 
+  group_by(NGS_file, Gene) %>% 
+  summarise(`% <10 reads`= sum(Depth<10)/n() * 100) %>% 
+  spread(NGS_file, `% <10 reads`) %>% 
+  select(Gene, CCGO_800596_Exome, CCGO_800071_WGS, HG001_WGS) %>% 
+  mutate(`Exome -> 30X WGS` = CCGO_800596_Exome - CCGO_800071_WGS, `30X WGS -> 50X WGS` = CCGO_800071_WGS - HG001_WGS) %>% 
+  arrange(`30X WGS -> 50X WGS`) %>% .[['Gene']]
 
 # Summary stats:
 # Num of genes with a >20% delta improvement going from Exome to 30X:
@@ -97,7 +115,7 @@ dat_df %>%
   select(Gene, CCGO_800596_Exome, CCGO_800071_WGS, HG001_WGS) %>% 
   mutate(`Exome -> 30X WGS` = CCGO_800596_Exome - CCGO_800071_WGS, `30X WGS -> 50X WGS` = CCGO_800071_WGS - HG001_WGS) %>% 
   filter(`Exome -> 30X WGS` > 20) %>% nrow()
-
+ordered_genes_1 <- 
 # Num of genes with a >20% delta improvement going from 30X to 50X:
 dat_df %>% 
   filter(NGS_file %in% c('CCGO_800071_WGS','HG001_WGS','CCGO_800596_Exome')) %>% 
@@ -108,6 +126,111 @@ dat_df %>%
   mutate(`Exome -> 30X WGS` = CCGO_800596_Exome - CCGO_800071_WGS, `30X WGS -> 50X WGS` = CCGO_800071_WGS - HG001_WGS) %>% 
   filter(`30X WGS -> 50X WGS` > 20) %>% nrow()
 
+
+```
+
+## Genes whose coverage improves more than 20% from exome -> 30X WGS; plot
+```{r, fig.width=5, fig.height=10}
+dat_df %>% mutate(Gene = factor(Gene, levels = ordered_genes_exome_30x)) %>% 
+  filter(NGS_file %in% c('CCGO_800071_WGS','HG001_WGS','CCGO_800596_Exome')) %>% 
+  group_by(NGS_file, Gene) %>% 
+  summarise(`% <10 reads`= sum(Depth<10)/n() * 100) %>% 
+  spread(NGS_file, `% <10 reads`) %>% 
+  select(Gene, CCGO_800596_Exome, CCGO_800071_WGS, HG001_WGS) %>% 
+  mutate(`Exome -> 30X WGS` = CCGO_800596_Exome - CCGO_800071_WGS, `30X WGS -> 50X WGS` = CCGO_800071_WGS - HG001_WGS) %>% 
+  filter(`Exome -> 30X WGS` > 20) %>% 
+  gather(Comparison, Value, CCGO_800596_Exome:`30X WGS -> 50X WGS`) %>% 
+  filter(Comparison %in% c('Exome -> 30X WGS', 'CCGO_800596_Exome', 'CCGO_800071_WGS')) %>% 
+  mutate(Comparison = factor(Comparison, levels = c('Exome -> 30X WGS', 'CCGO_800596_Exome', 'CCGO_800071_WGS'))) %>% 
+  ggplot(aes(x=Gene, y=Value))+ geom_bar(stat='identity') + theme_Publication() + coord_flip() +
+  facet_wrap(~ Comparison, ncol=3)+ labs(y="% BP under 10 Reads across Gene Body")
+```
+## Genes who coverage improves more than 20% from 30X WGS -> 50X WGS; plot
+```{r, fig.width=5, fig.height=5}
+dat_df %>% mutate(Gene = factor(Gene, levels = ordered_genes_30x_50x)) %>% 
+  filter(NGS_file %in% c('CCGO_800071_WGS','HG001_WGS','CCGO_800596_Exome')) %>% 
+  group_by(NGS_file, Gene) %>% 
+  summarise(`% <10 reads`= sum(Depth<10)/n() * 100) %>% 
+  spread(NGS_file, `% <10 reads`) %>% 
+  select(Gene, CCGO_800596_Exome, CCGO_800071_WGS, HG001_WGS) %>% 
+  mutate(`Exome -> 30X WGS` = CCGO_800596_Exome - CCGO_800071_WGS, `30X WGS -> 50X WGS` = CCGO_800071_WGS - HG001_WGS) %>% 
+  filter(`30X WGS -> 50X WGS` > 20) %>% 
+  gather(Comparison, Value, CCGO_800596_Exome:`30X WGS -> 50X WGS`) %>% 
+  filter(Comparison %in% c('30X WGS -> 50X WGS', 'CCGO_800071_WGS',  'HG001_WGS')) %>% 
+  mutate(Comparison = factor(Comparison, levels = c('30X WGS -> 50X WGS', 'CCGO_800071_WGS',  'HG001_WGS'))) %>% 
+  ggplot(aes(x=Gene, y=Value))+ geom_bar(stat='identity') + theme_Publication() + coord_flip() +
+  facet_wrap(~ Comparison, ncol=3) + labs(y="% BP under 10 Reads across Gene Body")+ scale_y_continuous(limits = c(0,100))
+```
+# Exome -> 30x, Developmental Genes
+```{r, fig.width=5, fig.height=5}
+dev <- c('ABCB6','ALDH1A3','ATOH7','B3GALTL','BCOR','BMP4','c12orf57','CASK','CHD7','COL4A1','COX7B','CRX','CYP1B1','DCDC1','ELP4','FKRP','FKTN','FOXC1','FOXC2','FOXE3','GDF3','GDF6','HESX1','HMGB3','ISPD','LAMB2','LARGE','LHX2','MAB21L2','MFRP','NAA10','NDP','NKX5- 3','OTX2','PAX2','PAX6','PITX2','PITX3','POMT1','POMT2','PRSS56','RAX','RAB3GAP1','RAB3GAP2','RAB18','RARB','SHH','SIX3','SIX6','SLC25A1','SNX3','SOX2','SOX3','STRA6','TENM3','TMEM98','VAX1','VSX2','ZEB2')
+dat_df %>% mutate(Gene = factor(Gene, levels = ordered_genes_exome_30x)) %>% 
+  filter(NGS_file %in% c('CCGO_800071_WGS','HG001_WGS','CCGO_800596_Exome')) %>% 
+  filter(Gene %in% dev) %>% 
+  group_by(NGS_file, Gene) %>% 
+  summarise(`% <10 reads`= sum(Depth<10)/n() * 100) %>% 
+  spread(NGS_file, `% <10 reads`) %>% 
+  select(Gene, CCGO_800596_Exome, CCGO_800071_WGS, HG001_WGS) %>% 
+  mutate(`Exome -> 30X WGS` = CCGO_800596_Exome - CCGO_800071_WGS, `30X WGS -> 50X WGS` = CCGO_800071_WGS - HG001_WGS) %>% 
+  gather(Comparison, Value, CCGO_800596_Exome:`30X WGS -> 50X WGS`) %>% 
+  filter(Comparison %in% c('Exome -> 30X WGS', 'CCGO_800596_Exome', 'CCGO_800071_WGS')) %>% 
+  mutate(Comparison = factor(Comparison, levels = c('Exome -> 30X WGS', 'CCGO_800596_Exome', 'CCGO_800071_WGS'))) %>% 
+  ggplot(aes(x=Gene, y=Value))+ geom_bar(stat='identity') + theme_Publication() + coord_flip() +
+  facet_wrap(~ Comparison, ncol=3)+ labs(y="% BP under 10 Reads across Gene Body")
+```
+
+# 30x -> 50x, Developmental Genes
+```{r, fig.width=5, fig.height=5}
+
+dat_df %>% mutate(Gene = factor(Gene, levels = ordered_genes_30x_50x)) %>% 
+  filter(NGS_file %in% c('CCGO_800071_WGS','HG001_WGS','CCGO_800596_Exome')) %>% 
+  filter(Gene %in% dev) %>% 
+  group_by(NGS_file, Gene) %>% 
+  summarise(`% <10 reads`= sum(Depth<10)/n() * 100) %>% 
+  spread(NGS_file, `% <10 reads`) %>% 
+  select(Gene, CCGO_800596_Exome, CCGO_800071_WGS, HG001_WGS) %>% 
+  mutate(`Exome -> 30X WGS` = CCGO_800596_Exome - CCGO_800071_WGS, `30X WGS -> 50X WGS` = CCGO_800071_WGS - HG001_WGS) %>% 
+  gather(Comparison, Value, CCGO_800596_Exome:`30X WGS -> 50X WGS`) %>% 
+  filter(Comparison %in% c('30X WGS -> 50X WGS', 'CCGO_800071_WGS',  'HG001_WGS')) %>% 
+  mutate(Comparison = factor(Comparison, levels = c('30X WGS -> 50X WGS', 'CCGO_800071_WGS',  'HG001_WGS'))) %>% 
+  ggplot(aes(x=Gene, y=Value))+ geom_bar(stat='identity') + theme_Publication() + coord_flip() +
+  facet_wrap(~ Comparison, ncol=3) + labs(y="% BP under 10 Reads across Gene Body") + scale_y_continuous(limits = c(0,100))
+```
+
+# Exome -> 30x, Pigmentation Genes
+```{r, fig.width=5, fig.height=3}
+pig <- c('OA1','OCA1','OCA2','OCA3','OCA4','c10orf11','HPS1','HPS2','HPS3','HPS4','HPS5','HPS6','HPS7','HPS8','HPS9','SLC24A5','SLC38A8','SLC45A2','LYST','EDN3','EDNRB','MITF','PAX3','RET','SNAI2','SOX10','KIT','MLPH','MYO5A','RAB27A')
+dat_df %>% mutate(Gene = factor(Gene, levels = ordered_genes_exome_30x)) %>% 
+  filter(NGS_file %in% c('CCGO_800071_WGS','HG001_WGS','CCGO_800596_Exome')) %>% 
+  filter(Gene %in% pig) %>% 
+  group_by(NGS_file, Gene) %>% 
+  summarise(`% <10 reads`= sum(Depth<10)/n() * 100) %>% 
+  spread(NGS_file, `% <10 reads`) %>% 
+  select(Gene, CCGO_800596_Exome, CCGO_800071_WGS, HG001_WGS) %>% 
+  mutate(`Exome -> 30X WGS` = CCGO_800596_Exome - CCGO_800071_WGS, `30X WGS -> 50X WGS` = CCGO_800071_WGS - HG001_WGS) %>% 
+  gather(Comparison, Value, CCGO_800596_Exome:`30X WGS -> 50X WGS`) %>% 
+  filter(Comparison %in% c('Exome -> 30X WGS', 'CCGO_800596_Exome', 'CCGO_800071_WGS')) %>% 
+  mutate(Comparison = factor(Comparison, levels = c('Exome -> 30X WGS', 'CCGO_800596_Exome', 'CCGO_800071_WGS'))) %>% 
+  ggplot(aes(x=Gene, y=Value))+ geom_bar(stat='identity') + theme_Publication() + coord_flip() +
+  facet_wrap(~ Comparison, ncol=3)+ labs(y="% BP under 10 Reads across Gene Body") + scale_y_continuous(limits = c(0,100))
+```
+
+# 30x -> 50x, Pigmentation Genes
+```{r, fig.width=5, fig.height=3}
+
+dat_df %>% mutate(Gene = factor(Gene, levels = ordered_genes_30x_50x)) %>% 
+  filter(NGS_file %in% c('CCGO_800071_WGS','HG001_WGS','CCGO_800596_Exome')) %>% 
+  filter(Gene %in% pig) %>% 
+  group_by(NGS_file, Gene) %>% 
+  summarise(`% <10 reads`= sum(Depth<10)/n() * 100) %>% 
+  spread(NGS_file, `% <10 reads`) %>% 
+  select(Gene, CCGO_800596_Exome, CCGO_800071_WGS, HG001_WGS) %>% 
+  mutate(`Exome -> 30X WGS` = CCGO_800596_Exome - CCGO_800071_WGS, `30X WGS -> 50X WGS` = CCGO_800071_WGS - HG001_WGS) %>% 
+  gather(Comparison, Value, CCGO_800596_Exome:`30X WGS -> 50X WGS`) %>% 
+  filter(Comparison %in% c('30X WGS -> 50X WGS', 'CCGO_800071_WGS',  'HG001_WGS')) %>% 
+  mutate(Comparison = factor(Comparison, levels = c('30X WGS -> 50X WGS', 'CCGO_800071_WGS',  'HG001_WGS'))) %>% 
+  ggplot(aes(x=Gene, y=Value))+ geom_bar(stat='identity') + theme_Publication() + coord_flip() +
+  facet_wrap(~ Comparison, ncol=3) + labs(y="% BP under 10 Reads across Gene Body") + scale_y_continuous(limits = c(0,100))
 ```
 
 ## Density in coding exons, split by gene, coloured by test
