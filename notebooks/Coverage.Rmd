@@ -67,6 +67,49 @@ dat_df %>% group_by(NGS_file, Gene) %>% summarise(`10 reads`= sum(Depth<10)/n() 
   facet_wrap(~ NGS_file, ncol=8)
 ```
 
+## Genes whose coverage improves from exome -> 30X WGS -> 50X WGS
+```{r, fig.width=10, fig.height=35}
+dat_df %>% 
+  filter(NGS_file %in% c('CCGO_800071_WGS','HG001_WGS','CCGO_800596_Exome')) %>% 
+  group_by(NGS_file, Gene) %>% 
+  summarise(`% <10 reads`= sum(Depth<10)/n() * 100) %>% 
+  spread(NGS_file, `% <10 reads`) %>% 
+  select(Gene, CCGO_800596_Exome, CCGO_800071_WGS, HG001_WGS) %>% 
+  mutate(`Exome -> 30X WGS` = CCGO_800596_Exome - CCGO_800071_WGS, `30X WGS -> 50X WGS` = CCGO_800071_WGS - HG001_WGS) %>% 
+  arrange(-`Exome -> 30X WGS`)
+
+dat_df %>% 
+  filter(NGS_file %in% c('CCGO_800071_WGS','HG001_WGS','CCGO_800596_Exome')) %>% 
+  group_by(NGS_file, Gene) %>% 
+  summarise(`% <10 reads`= sum(Depth<10)/n() * 100) %>% 
+  spread(NGS_file, `% <10 reads`) %>% 
+  select(Gene, CCGO_800596_Exome, CCGO_800071_WGS, HG001_WGS) %>% 
+  mutate(`Exome -> 30X WGS` = CCGO_800596_Exome - CCGO_800071_WGS, `30X WGS -> 50X WGS` = CCGO_800071_WGS - HG001_WGS) %>% 
+  arrange(-`30X WGS -> 50X WGS`)
+
+# Summary stats:
+# Num of genes with a >20% delta improvement going from Exome to 30X:
+dat_df %>% 
+  filter(NGS_file %in% c('CCGO_800071_WGS','HG001_WGS','CCGO_800596_Exome')) %>% 
+  group_by(NGS_file, Gene) %>% 
+  summarise(`% <10 reads`= sum(Depth<10)/n() * 100) %>% 
+  spread(NGS_file, `% <10 reads`) %>% 
+  select(Gene, CCGO_800596_Exome, CCGO_800071_WGS, HG001_WGS) %>% 
+  mutate(`Exome -> 30X WGS` = CCGO_800596_Exome - CCGO_800071_WGS, `30X WGS -> 50X WGS` = CCGO_800071_WGS - HG001_WGS) %>% 
+  filter(`Exome -> 30X WGS` > 20) %>% nrow()
+
+# Num of genes with a >20% delta improvement going from 30X to 50X:
+dat_df %>% 
+  filter(NGS_file %in% c('CCGO_800071_WGS','HG001_WGS','CCGO_800596_Exome')) %>% 
+  group_by(NGS_file, Gene) %>% 
+  summarise(`% <10 reads`= sum(Depth<10)/n() * 100) %>% 
+  spread(NGS_file, `% <10 reads`) %>% 
+  select(Gene, CCGO_800596_Exome, CCGO_800071_WGS, HG001_WGS) %>% 
+  mutate(`Exome -> 30X WGS` = CCGO_800596_Exome - CCGO_800071_WGS, `30X WGS -> 50X WGS` = CCGO_800071_WGS - HG001_WGS) %>% 
+  filter(`30X WGS -> 50X WGS` > 20) %>% nrow()
+
+```
+
 ## Density in coding exons, split by gene, coloured by test
 ### (I can add any gene you want here)
 ```{r}
