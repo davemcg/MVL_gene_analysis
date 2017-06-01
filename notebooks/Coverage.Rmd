@@ -1,5 +1,5 @@
 ---
-title: "R Notebook"
+title: "Coverage Analysis for MVL eye gene panel for different NGS tech"
 output: html_notebook
 ---
 
@@ -50,7 +50,7 @@ dat_df %>% filter(NGS_file %in% c('CCGO_800071_WGS','HG001_WGS','CCGO_800596_Exo
   ggplot(aes(x=log2(Depth+1), colour=NGS_file)) + geom_density() + theme_Publication() + geom_vline(xintercept = log2(10), colour='red')
 ```
 
-## Mean and median for each test
+## Mean and median coverage for each test
 ```{r}
 dat_df %>% group_by(NGS_file) %>% summarise(Mean=mean(Depth), Median=median(Depth), `25th`=quantile(Depth,0.25), `75th` = quantile(Depth,0.75))
 ```
