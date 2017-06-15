@@ -27,7 +27,7 @@ None|15|15|0|0|1.0000|1.0000|1.0000|INDEL
 # 35X WGS (OGVFB)
 Threshold|True-pos-baseline|True-pos-call|False-pos|False-neg|Precision|Sensitivity|F-measure|Test
 -------|----------|--------|--------|------|------|---------|------------|-----
-None|679|679|2|0|0.9971|1.0000|0.9985
+None|679|679|2|0|0.9971|1.0000|0.9985|SNP
 None|14|14|0|1|1.0000|0.9333|0.9655|INDEL
 # 25X WGS (OGVFB)
 Threshold|True-pos-baseline|True-pos-call|False-pos|False-neg|Precision|Sensitivity|F-measure|Test
